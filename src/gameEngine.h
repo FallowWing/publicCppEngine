@@ -77,7 +77,7 @@
 
 #ifdef SEMI_LINUX
 # define SEMI_SDL
-// # define SEMI_GL_CORE
+# define SEMI_GL_CORE
 # define SEMI_GL
 # define SEMI_AL
 # define SEMI_CURL_NETWORK
