@@ -1,6 +1,8 @@
 #include "memoryTools.h"
 #define MEMORY_CHUNK_LIMIT 8192
 
+#define ConsumeBytes(dest, src, count) memcpy(dest, src, count); src += count;
+
 struct MemoryChunk {
 	bool exists;
 	size_t size;

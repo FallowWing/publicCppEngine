@@ -11,8 +11,7 @@ extern "C" void flashStreamTextureCallback();
 
 void flashStreamTextures(const char **assetIds, int assetIdsNum);
 
-void (*flashLoadCallbackToGame)(char *);
-void (*flashStreamLoadCallbackToGame)(char *, int);
+void (*flashLoadCallbackToGame)(char *, int);
 char flashTempLoadString[SERIAL_SIZE];
 
 void *initPlatform(int mem) {
@@ -83,7 +82,7 @@ extern "C" void flashSaveCallback(int errorCode) {
 extern "C" void flashLoadCallback(int errorCode) {
 	if (errorCode != 0) {
 		printf("A error occurred while loading. %d\n", errorCode);
-		flashLoadCallbackToGame(NULL);
+		flashLoadCallbackToGame(NULL, 0);
 		return;
 	}
 
@@ -92,7 +91,7 @@ extern "C" void flashLoadCallback(int errorCode) {
 	char *buffer = (char *)malloc(platformLoadedStringSize+1);
 	memcpy(buffer, flashTempLoadString, platformLoadedStringSize);
 	buffer[platformLoadedStringSize] = '\0';
-	flashLoadCallbackToGame(buffer);
+	flashLoadCallbackToGame(buffer, platformLoadedStringSize);
 }
 
 extern "C" float *flashGetSoundBuffer() {
@@ -123,13 +122,13 @@ void platformSaveToDisk(const char *str) {
 	inline_as3("Console.saveToDisk(%0, %1);" :: "r"(str), "r"(strlen(str)));
 }
 
-void platformLoadFromDisk(void (*loadCallback)(char *)) {
+void platformLoadFromDisk(void (*loadCallback)(char *, int)) {
 	flashLoadCallbackToGame = loadCallback;
 	memset(flashTempLoadString, 0, SERIAL_SIZE);
 	inline_as3("Console.loadFromDisk(%0);" :: "r"(flashTempLoadString));
 }
 
-void platformLoadFromUrl(const char *url, void (*loadCallback)(char *)) {
+void platformLoadFromUrl(const char *url, void (*loadCallback)(char *, int)) {
 	flashLoadCallbackToGame = loadCallback;
 	memset(flashTempLoadString, 0, SERIAL_SIZE);
 	inline_as3("Console.loadFromUrl(%0, %1, %2);" :: "r"(url), "r"(strlen(url)), "r"(flashTempLoadString));

@@ -64,7 +64,7 @@ void *initPlatform(int mem) {
 	sdlContext = SDL_GL_CreateContext(sdlWindow);
 	Assert(sdlContext);
 
-	// Assert(!SDL_GL_SetSwapInterval(1));
+	Assert(!SDL_GL_SetSwapInterval(1));
 
 	glewExperimental = GL_TRUE; 
 	Assert(glewInit() == GLEW_OK);
@@ -187,13 +187,13 @@ void platformSaveToDisk(const char *str) {
 	// platformSaveToTemp(str);
 }
 
-void platformLoadFromDisk(void (*loadCallback)(char *)) {
-	FILE *f = fopen(windowsDiskLoadPath, "r");
+void platformLoadFromDisk(void (*loadCallback)(char *, int)) {
+	FILE *f = fopen(windowsDiskLoadPath, "rb");
 	if (f == NULL) {
 		printf("Disk file doesn't exist\n");
 
 		char *str = stringClone("none");
-		loadCallback(str);
+		loadCallback(str, 0);
 		return;
 	}
 
@@ -206,10 +206,10 @@ void platformLoadFromDisk(void (*loadCallback)(char *)) {
 	fclose(f);
 
 	str[fileLen] = '\0';
-	loadCallback(str);
+	loadCallback(str, fileLen);
 }
 
-void platformLoadFromUrl(const char *url, void (*loadCallback)(char *)) {
+void platformLoadFromUrl(const char *url, void (*loadCallback)(char *, int)) {
 	loadFromUrl(url, loadCallback);
 }
 

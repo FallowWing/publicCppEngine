@@ -189,11 +189,12 @@ void platformSaveToDisk(const char *str) {
 	platformSaveToTemp(str);
 }
 
-void platformLoadFromDisk(void (*loadCallback)(char *)) {
-	loadCallback(platformLoadFromTemp());
+void platformLoadFromDisk(void (*loadCallback)(char *, int)) {
+	char *str = platformLoadFromTemp();
+	loadCallback(str, strlen(str));
 }
 
-void platformLoadFromUrl(const char *url, void (*loadCallback)(char *)) {
+void platformLoadFromUrl(const char *url, void (*loadCallback)(char *, int)) {
 	loadFromUrl(url, loadCallback);
 }
 

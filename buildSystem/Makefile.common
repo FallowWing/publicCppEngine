@@ -594,6 +594,26 @@ packWindows:
 installPhotoshopExtention:
 	cmd /c "copy $(CPP_TOOLS_WIN)\\engine\\buildSystem\\exportAsset.jsx \"c:\\Program Files\\Adobe\\Adobe Photoshop CS6 (64 Bit)\\Presets\\Scripts\exportAsset.jsx\""
 
+gource:
+	rm -rf bin/gource
+	mkdir bin/gource
+	gource --output-custom-log bin/gource/engineRepo.txt ../engine
+	gource --output-custom-log bin/gource/mintGameRepo.txt ../mintGame
+	gource --output-custom-log bin/gource/mintWriterRepo.txt ../mintWriter
+	gource --output-custom-log bin/gource/sourceAssetsRepo.txt ../sourceAssets
+	sed -i -r "s#(.+)\|#\1|/Engine#" bin/gource/engineRepo.txt
+	sed -i -r "s#(.+)\|#\1|/Semiphore#" bin/gource/mintGameRepo.txt
+	sed -i -r "s#(.+)\|#\1|/Interphore#" bin/gource/mintWriterRepo.txt
+	sed -i -r "s#(.+)\|#\1|/SourceAssets#" bin/gource/sourceAssetsRepo.txt
+	cat bin/gource/*.txt | sort -n > bin/gource/combined.txt
+	sed -i -r "s/MintPaw/FallowWing/g" bin/gource/combined.txt
+	sed -i -r "s/\|.{2}Amaranta.{12}\|/\|Kittery\|/g" bin/gource/combined.txt
+	sed -i -r "s/\|unknown\|/\|Kittery\|/g" bin/gource/combined.txt
+	sed -i -r "/^.*\|\/Engine\/lib\/.*$//d" bin/gource/combined.txt
+	sed -i -r "/^.*\|\/Engine\/include\/.*$//d" bin/gource/combined.txt
+	
+	gource -1280x720 bin/gource/combined.txt --seconds-per-day 0.4 -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 bin/gource/out.mp4
+
 testVars:
 	printenv
 	# echo $$NEW_WRITER

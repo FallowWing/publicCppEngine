@@ -9,7 +9,7 @@ struct CurlMemoryStruct {
 
 size_t curlWriteFunc(void *contents, size_t size, size_t nmemb, void *userp);
 
-void loadFromUrl(const char *url, void (*loadCallback)(char *)) {
+void loadFromUrl(const char *url, void (*loadCallback)(char *, int)) {
 	CURL *curl = curl_easy_init();
 	Assert(curl);
 
@@ -30,7 +30,7 @@ void loadFromUrl(const char *url, void (*loadCallback)(char *)) {
 	curl_easy_cleanup(curl);
 	// printf("%lu bytes retrieved\n", (long)chunk.size);
 	platformLoadedStringSize = chunk.size;
-	loadCallback(chunk.memory);
+	loadCallback(chunk.memory, chunk.size);
 }
 
 size_t curlWriteFunc(void *contents, size_t size, size_t nmemb, void *userp) {

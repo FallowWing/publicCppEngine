@@ -336,7 +336,7 @@ package
 			}, false, 0, true);
 		}
 
-		public static function loadFromDisk(outStrPtr:int):void {
+		public static function loadFromDisk(outDataPtr:int):void {
 			ignoreEvents = true;
 			var textFormat:TextFormat = new TextFormat();
 			textFormat.size = 26;
@@ -447,8 +447,8 @@ package
 					str += s;
 				}
 
-				if (str == null || str == "") CModule.writeString(outStrPtr, "none");
-				else CModule.writeString(outStrPtr, str);
+				if (str == null || str == "") CModule.writeString(outDataPtr, "none");
+				else CModule.writeString(outDataPtr, str);
 
 				loadedStringSize = str.length;
 
@@ -468,11 +468,10 @@ package
 
 					file.addEventListener(Event.SELECT, function (e:Event):void {
 						file.addEventListener(Event.COMPLETE, function(e:Event):void {
-							var str:String = file.data.readUTFBytes(file.data.length);
-							if (str == null) CModule.writeString(outStrPtr, "none");
-							else CModule.writeString(outStrPtr, str);
+							loadedStringSize = file.data.length;
 
-							loadedStringSize = str.length;
+							if (loadedStringSize == 0) CModule.writeString(outDataPtr, "none");
+							else CModule.writeBytes(outDataPtr, loadedStringSize, file.data);
 
 							flashLoadCallbackParams[0] = 0;
 							CModule.callI(flashLoadCallbackPtr, flashLoadCallbackParams);
