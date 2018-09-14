@@ -105,7 +105,8 @@ MintSprite *MintSprite::recreate(const char *assetId) {
 
 void MintSprite::setupEmpty(int width, int height) {
 	MintSprite *spr = this;
-
+	if (spr->isSetup) return;
+	spr->isSetup = true; 
 	spr->width = width;
 	spr->height = height;
 	spr->wordWrapWidth = width;
@@ -114,10 +115,12 @@ void MintSprite::setupEmpty(int width, int height) {
 
 void MintSprite::setupContainer(int width, int height) {
 	MintSprite *spr = this;
+	if (spr->isSetup) return;
 
 	spr->width = width;
 	spr->height = height;
 	spr->unrenderable = true;
+	spr->isSetup = true; 
 }
 
 void MintSprite::setupRect(int width, int height, int rgb) {
@@ -152,6 +155,8 @@ void MintSprite::setupImage(const char *assetId) {
 
 void MintSprite::setup9Slice(const char *assetId, int width, int height, int x1, int y1, int x2, int y2) {
 	MintSprite *spr = this;
+
+	spr->is9Slice = true;
 
 	if (x1 == 0 && y1 == 0 && x1 == 0 && x2 == 0) {
 		int pixelsWidth, pixelsHeight;
@@ -216,6 +221,13 @@ void MintSprite::setup9Slice(const char *assetId, int width, int height, int x1,
 			spr->drawPixels(origin.x, origin.y, origin.width, origin.height, draw.x, draw.y, draw.width/origin.width, draw.height/origin.height, 0);
 		}
 	}
+}
+
+void MintSprite::reloadGraphic() {
+	MintSprite *spr = this;
+	if (spr->is9Slice) return; //@todo Make this actually work later
+
+	spr->copyPixels(0, 0, spr->width, spr->height, 0, 0, 0);
 }
 
 int getWidestFrame(MintSprite *spr) {

@@ -50,9 +50,9 @@ struct RendererData {
 	GLint p_u_texture;
 	GLint p_u_offset;
 
+	GLuint tempVerts;
 	GLuint textureFramebuffer;
 	GLuint emptyTexture;
-	GLuint emptyVerts;
 	GLuint emptyTexcoords;
 	GLuint defaultTexcoords;
 

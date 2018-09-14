@@ -119,7 +119,7 @@ void initRenderer(void *rendererMemory) {
 	glGenFramebuffers(1, &renderer->textureFramebuffer);
 
 	renderer->emptyTexture = genGlTexture(TEXTURE_WIDTH_LIMIT, TEXTURE_HEIGHT_LIMIT, NULL);
-	renderer->emptyVerts = genGlArrayBuffer(0, 0, 1, 1);
+	renderer->tempVerts = genGlArrayBuffer(0, 0, 1, 1);
 	renderer->emptyTexcoords = genGlArrayBuffer(0, 0, 1, 1);
 	// strcpy(emptyTexture->key, "renderTexture");
 
@@ -263,11 +263,13 @@ void renderSprites(MintSprite **sprites, int spritesNum, Matrix *scaleMatrix, Ma
 			matrixTranslate(&uv, spr->curFrameRect.x/spr->textureWidth, spr->curFrameRect.y/spr->textureHeight);
 			matrixScale(&uv, spr->curFrameRect.width/spr->textureWidth, spr->curFrameRect.height/spr->textureHeight);
 
-			changeArrayBuffer(spr->vertexBuffer, 0, 0, spr->curFrameRect.width, spr->curFrameRect.height);
+			changeArrayBuffer(renderer->tempVerts, 0, 0, spr->curFrameRect.width, spr->curFrameRect.height);
+		} else {
+			changeArrayBuffer(renderer->tempVerts, 0, 0, spr->width, spr->height);
 		}
 
 		glEnableVertexAttribArray(renderer->a_position);
-		setArrayBuffer(spr->vertexBuffer);
+		setArrayBuffer(renderer->tempVerts);
 		glVertexAttribPointer(renderer->a_position, 2, GL_FLOAT, false, 0, NULL);
 
 		glEnableVertexAttribArray(renderer->a_texcoord);
@@ -306,7 +308,7 @@ void simpleTextureRender(GLuint src, int srcWidth, int srcHeight) {
 	matrixIdentity(&realTrans);
 	matrixProject(&realTrans, engine->width, engine->height);
 
-	changeArrayBuffer(renderer->emptyVerts, 0, 0, srcWidth, srcHeight);
+	changeArrayBuffer(renderer->tempVerts, 0, 0, srcWidth, srcHeight);
 	glEnableVertexAttribArray(renderer->a_position);
 	glVertexAttribPointer(renderer->a_position, 2, GL_FLOAT, false, 0, 0);
 
@@ -378,42 +380,15 @@ void initEmptySprite(MintSprite *spr) {
 	spr->texture = genGlTexture(width, height, NULL);
 	spr->textureWidth = width;
 	spr->textureHeight = height;
-
-	float buffer[12] = {
-		0, 0,
-		(float)width, 0,
-		(float)width, (float)height,
-		0, 0,
-		0, (float)height,
-		(float)width, (float)height
-	};
-
-	glGenBuffers(1, &spr->vertexBuffer);
-	setArrayBuffer(spr->vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(buffer), buffer, GL_DYNAMIC_DRAW);
 }
 
 void initAnimatedSprite(MintSprite *spr) {
 	int width = spr->width;
 	int height = spr->height;
 	//@cleanup This should set textureWidth/textureHeight
-
-	float buffer[12] = {
-		0, 0,
-		(float)width, 0,
-		(float)width, (float)height,
-		0, 0,
-		0, (float)height,
-		(float)width, (float)height
-	};
-
-	glGenBuffers(1, &spr->vertexBuffer);
-	setArrayBuffer(spr->vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(buffer), buffer, GL_DYNAMIC_DRAW);
 }
 
 void deinitSprite(MintSprite *spr) {
-	glDeleteVertexArrays(1, &spr->vertexBuffer);
 	destroyGlTexture(spr->texture);
 	// if (spr->uniqueTexture) destroyGlTexture(spr->texture);
 }
@@ -425,7 +400,7 @@ void destroyTexture(Asset *asset) {
 void generateTexture(void *rgba, Asset *asset, bool argb) {
 	Assert(argb == 0); // Not supported in gl
 	asset->glTexture = genGlTexture(asset->width, asset->height, (unsigned char *)rgba);
-	Free(rgba);
+	Free(rgba); //@todo Figure out if this should actually be here???
 }
 
 void renderSpriteToSprite(MintSprite *source, MintSprite *dest, RenderProps *props) {
@@ -455,7 +430,7 @@ void renderTextureToTexture(GLuint src, int srcWidth, int srcHeight, GLuint dest
 	setShaderProgram(&renderer->renderTextureProgram);
 	setViewport(0, 0, canvasWidth, canvasHeight);
 
-	changeArrayBuffer(renderer->emptyVerts, 0, 0, props->width, props->height);
+	changeArrayBuffer(renderer->tempVerts, 0, 0, props->width, props->height);
 	glEnableVertexAttribArray(renderer->rt_a_position);
 	glVertexAttribPointer(renderer->rt_a_position, 2, GL_FLOAT, false, 0, 0);
 
@@ -521,7 +496,8 @@ void drawTilesOnSprite(MintSprite *spr, const char *assetId, int tileWidth, int 
 	setViewport(0, 0, spr->width, spr->height);
 
 	glEnableVertexAttribArray(renderer->tm_a_position);
-	setArrayBuffer(spr->vertexBuffer);
+	changeArrayBuffer(renderer->tempVerts, 0, 0, spr->width, spr->height);
+	setArrayBuffer(renderer->tempVerts);
 	glVertexAttribPointer(renderer->tm_a_position, 2, GL_FLOAT, false, 0, 0);
 	checkGlError(__LINE__, "");
 

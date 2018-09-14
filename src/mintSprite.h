@@ -24,6 +24,8 @@ struct MintSprite {
 	bool exists;
 	bool active;
 	bool unrenderable;
+	bool is9Slice;
+	bool isSetup;
 
 	float x;
 	float y;
@@ -124,7 +126,6 @@ struct MintSprite {
 
 #ifdef SEMI_GL
 	GLuint texture;
-	GLuint vertexBuffer;
 	int textureWidth;
 	int textureHeight;
 	bool uniqueTexture;
@@ -143,6 +144,7 @@ struct MintSprite {
 	void setupCanvas(const char *assetId, int width=0, int height=0);
 	void setupStretchedImage(const char *assetId, int width=0, int height=0);
 	void setup9Slice(const char *assetId, int width, int height, int x1=5, int y1=5, int x2=10, int y2=10);
+	void reloadGraphic();
 
 	void fillPixels(int x, int y, int width, int height, int argb=0xFFFF0000);
 	void copyPixels(int x, int y, int width, int height, int dx=0, int dy=0, bool bleed=false);
